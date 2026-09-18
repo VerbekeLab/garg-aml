@@ -17,3 +17,4 @@ values produced the results published in
 | [0005](0005-synthetic-generator-differs.md) | The synthetic generator does not reproduce the paper's datasets |
 | [0006](0006-no-torch-dependency.md) | No PyTorch, ever |
 | [0007](0007-directed-score-is-equation-14.md) | The directed score is Eq. 14, without the transpose-max |
+| [0008](0008-node-identity-is-preserved.md) | Node ids come back unchanged; the old directed path cast them to float |

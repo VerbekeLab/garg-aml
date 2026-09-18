@@ -21,9 +21,10 @@ import networkx as nx
 import pandas as pd
 import pytest
 
-from garg_aml.preprocess import graph_community
+from garg_aml._ordering import node_order
+from garg_aml.preprocess import reduce_graph
 
-from ._pipeline import features_frame, measures_frame, scores_frame
+from ._pipeline import features_frame, index_values, measures_frame, scores_frame
 
 RESEARCH_REPO = Path(
     os.environ.get("GARGAML_RESEARCH_REPO", Path(__file__).parents[3] / "GARG-AML")
@@ -114,18 +115,14 @@ def test_node_ordering_matches(name, directed):
             expected = old["nodeselection"](
                 ego, node, True, G_ego_second_und=ego_und, G_ego_second_rev=ego_rev
             )
-            from garg_aml._ordering import GARG_AML_nodeselection
-
-            produced = GARG_AML_nodeselection(
-                ego, node, True, G_ego_second_und=ego_und, G_ego_second_rev=ego_rev
+            produced = node_order(
+                ego, node, True, ego_undirected=ego_und, ego_reverse=ego_rev
             )
         else:
             ego = nx.ego_graph(G, node, 2)
             expected = old["nodeselection"](ego, node, False)
 
-            from garg_aml._ordering import GARG_AML_nodeselection
-
-            produced = GARG_AML_nodeselection(ego, node, False)
+            produced = node_order(ego, node, False)
 
         assert produced == expected, f"ordering differs at node {node}"
 
@@ -168,11 +165,15 @@ def test_scores_and_features_match(name, directed):
     for score_type in ("basic", "weighted_average"):
         expected = old["scores"](measures, directed, score_type=score_type)
         produced = scores_frame(measures, directed)
+        # check_index=False: the old directed path returned a float node
+        # index, an artefact of collecting ids through iterrows(). The values
+        # are what must agree. See docs/decisions/0008.
         for column in expected.columns:
             pd.testing.assert_series_equal(
                 produced[f"{score_type}__{column}"].rename(column),
                 expected[column].sort_index(),
                 rtol=0,
+                check_index=False,
             )
 
     expected_features = old["summarise"](
@@ -191,8 +192,12 @@ def test_scores_and_features_match(name, directed):
             "degree_std",
         ],
     ).sort_index()
+    produced_features = features_frame(G, measures, directed)
+    assert index_values(produced_features) == index_values(expected_features)
     pd.testing.assert_frame_equal(
-        features_frame(G, measures, directed), expected_features, rtol=0
+        produced_features.reset_index(drop=True),
+        expected_features.reset_index(drop=True),
+        rtol=0,
     )
 
 
@@ -202,7 +207,7 @@ def test_louvain_reduction_matches(name, directed):
     old = _old()
     G = _build(name, directed)
 
-    produced = graph_community(G, resolution=10)
+    produced = reduce_graph(G, resolution=10)
     expected = old["community"](G, resolution=10)
 
     assert sorted(produced.nodes, key=str) == sorted(expected.nodes, key=str)

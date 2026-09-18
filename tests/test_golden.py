@@ -9,11 +9,12 @@ updating -- see tests/golden/README.md.
 import pandas as pd
 import pytest
 
-from garg_aml.preprocess import graph_community
+from garg_aml.preprocess import reduce_graph
 
 from ._pipeline import (
     edge_frame,
     features_frame,
+    index_values,
     load_graph,
     measures_frame,
     node_frame,
@@ -38,6 +39,13 @@ def _graph(golden, case, direction, variant):
 
 
 def _same(produced, expected):
+    # Indices are compared by value, not by dtype. The directed score and
+    # feature fixtures carry a *float* node index because the old
+    # implementation collected node ids through DataFrame.iterrows(), which
+    # coerces a row to one dtype; the package preserves whatever the caller's
+    # node ids are. See docs/decisions/0008.
+    assert index_values(produced) == index_values(expected)
+
     pd.testing.assert_frame_equal(
         produced.reset_index(drop=True),
         expected.reset_index(drop=True),
@@ -52,7 +60,7 @@ def test_reduce_graph_reproduces_the_frozen_partition(golden, case, direction):
     # The version-sensitive fixture: Louvain's partition is networkx's to
     # change. Kept separate so an upgrade breaks this and nothing else.
     G = load_graph(golden / case / "edges.csv", direction == "directed")
-    reduced = graph_community(G, resolution=RESOLUTION)
+    reduced = reduce_graph(G, resolution=RESOLUTION)
 
     _same(
         node_frame(reduced),

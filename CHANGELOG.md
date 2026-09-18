@@ -24,10 +24,35 @@ is `0.x` the public API may change with a minor bump, always with an entry here.
   latter needs the research repository present and is removed once the
   extraction is complete.
 
+### Changed
+
+- PEP 8 names throughout, with the two per-node measure functions merged into
+  one `block_measures(graph, node, directed=False)`:
+
+  | was | is |
+  |---|---|
+  | `GARG_AML_node_{un,}directed_measures` | `block_measures` |
+  | `calculate_score_{un,}directed` | `score_from_measures` |
+  | `define_gargaml_scores` | `scores_from_measures` |
+  | `graph_community` | `reduce_graph` |
+  | `graph_degree` | `drop_hubs` |
+  | `summaries_neighbourhoors_node` | `neighbour_score_stats` |
+  | `degree_neighbours_node` | `neighbour_degree_stats` |
+  | `summarise_gargaml_scores` | `build_features` |
+  | `measure_NN_function` | private `_block_NN` |
+
+- **`score_type` now defaults to `"weighted_average"`**, the aggregation every
+  published experiment uses. The previous default, `"basic"`, gives different
+  numbers.
+- `reduce_graph` takes `seed` (default 1997) rather than hard-coding it.
+- `build_features` returns every feature column by default rather than only the
+  score.
+- Node identity is preserved: the old directed path cast integer node ids to
+  float. Cosmetic, but the package no longer does it — see `docs/decisions/0008`.
+- Type hints on every function and NumPy-style docstrings with paper references
+  on every public one, each carrying a doctest that runs in CI.
+
 ### Notes
 
-- Public names are still the research repository's (`GARG_AML_node_*_measures`,
-  `define_gargaml_scores`, ...). Renaming to PEP 8, type hints and NumPy-style
-  docstrings follow in the next release step, with the fixtures green throughout.
 - The original's bare `except:` around the neighbour statistics is written as the
   explicit empty check it always was. Same result, verified by both test layers.
