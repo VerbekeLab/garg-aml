@@ -1,0 +1,74 @@
+{
+  "purpose": "Frozen behaviour of GARG-AML before extraction into the garg-aml package. Never edit these files to make a test pass.",
+  "generated_by": "scripts/make_golden.py",
+  "source_repo": "B-Deprez/GARG-AML",
+  "source_commit": "f627b8a114f5ea3ac7c9030c35901e71d24a758a",
+  "source_tree_dirty": true,
+  "settings": {
+    "seed": 1997,
+    "louvain_resolution": 10,
+    "score_types": [
+      "basic",
+      "weighted_average"
+    ],
+    "feature_score_type": "weighted_average"
+  },
+  "environment": {
+    "python": "3.11.0",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "networkx": "2.8.8",
+    "numpy": "1.24.4",
+    "pandas": "1.5.3",
+    "igraph": "0.11.4"
+  },
+  "cases": {
+    "toy": {
+      "undirected": {
+        "nodes": 24,
+        "edges": 46,
+        "reduced_edges": 3
+      },
+      "directed": {
+        "nodes": 24,
+        "edges": 46,
+        "reduced_edges": 3
+      }
+    },
+    "synth_ba": {
+      "undirected": {
+        "nodes": 245,
+        "edges": 503,
+        "reduced_edges": 228
+      },
+      "directed": {
+        "nodes": 245,
+        "edges": 503,
+        "reduced_edges": 228
+      }
+    },
+    "synth_er": {
+      "undirected": {
+        "nodes": 90,
+        "edges": 112,
+        "reduced_edges": 68
+      },
+      "directed": {
+        "nodes": 90,
+        "edges": 112,
+        "reduced_edges": 68
+      }
+    },
+    "synth_ws": {
+      "undirected": {
+        "nodes": 245,
+        "edges": 503,
+        "reduced_edges": 347
+      },
+      "directed": {
+        "nodes": 245,
+        "edges": 503,
+        "reduced_edges": 348
+      }
+    }
+  }
+}

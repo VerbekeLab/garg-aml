@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "garg-aml"
+dynamic = ["version"]
+description = "Graph-based detection of smurfing patterns in transaction networks."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Bruno Deprez", email = "bruno.deprez@kuleuven.be" }]
+keywords = ["anti-money-laundering", "smurfing", "graph", "fraud-detection", "networks"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Typing :: Typed",
+]
+
+# scipy is not optional: networkx builds the per-node adjacency matrix through it.
+dependencies = ["numpy", "pandas", "networkx>=3.0", "scipy"]
+
+[project.optional-dependencies]
+progress = ["tqdm"]
+parallel = ["joblib"]
+sklearn = ["scikit-learn"]
+dev = ["ruff", "mypy", "pytest", "pytest-cov", "pre-commit"]
+docs = ["mkdocs-material", "mkdocstrings[python]"]
+
+[project.urls]
+Homepage = "https://github.com/VerbekeLab/garg-aml"
+Documentation = "https://verbekelab.github.io/garg-aml/"
+Source = "https://github.com/VerbekeLab/garg-aml"
+Changelog = "https://github.com/VerbekeLab/garg-aml/blob/main/CHANGELOG.md"
+Paper = "https://arxiv.org/abs/2506.04292"
+
+[tool.hatch.version]
+path = "src/garg_aml/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/garg_aml"]
+
+# --- Lint and format: ruff only, no black/isort/flake8 ----------------------
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]
+
+# tools/ holds verbatim copies of scripts that run inside the research repo,
+# under its conventions (sys.path setup before imports, its own formatting).
+# Reformatting them here would make them diverge from the originals they exist
+# to document, so they are excluded rather than fixed.
+extend-exclude = ["tools"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "C90", "D", "NPY", "PD", "RUF"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]      # tests document themselves by name
+"tools/*" = ["D"]
+
+# --- Types ------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.10"
+files = ["src/garg_aml"]
+disallow_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["networkx.*", "scipy.*"]
+ignore_missing_imports = true
+
+# --- Tests ------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers --cov=garg_aml --cov-report=term-missing --cov-fail-under=90"
+markers = [
+    "requires_data: needs the IBM AMLworld dataset, which is not redistributable",
+]
