@@ -1,0 +1,35 @@
+# --- Private agent instructions --------------------------------------------
+# Steering notes for Claude Code, deliberately not published. Every decision
+# recorded there must also exist in docs/decisions/ or CONTRIBUTING.md -- if
+# deleting this file would lose information, it was in the wrong file.
+CLAUDE.md
+
+# --- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- Virtual environments ---------------------------------------------------
+# Keep these OUT of the repo directory: it lives in OneDrive, which would sync
+# every file in site-packages. Prefer ~/.venvs/garg-aml.
+.venv/
+venv/
+env/
+
+# --- Tooling caches ---------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+site/
+
+# --- OS / editor ------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp
