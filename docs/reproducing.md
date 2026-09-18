@@ -33,7 +33,7 @@ only through a function no experiment called. It is not ported. See
 Pin an exact version when reproducing published numbers:
 
 ```bash
-pip install garg-aml==0.1.0
+pip install garg-aml-smurfing==0.1.0
 ```
 
 Each release is tagged in the repository and archived with a DOI, so a paper can

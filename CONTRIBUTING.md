@@ -72,7 +72,8 @@ registered with:
 | Field | Value |
 |---|---|
 | Owner | `VerbekeLab` |
-| Repository | `garg-aml` |
+| Repository | `garg-aml` (the GitHub repo) |
+| PyPI project | `garg-aml-smurfing` |
 | Workflow | `release.yml` |
 | Environment | `release` |
 
@@ -99,7 +100,7 @@ confirm it works with nothing else present.
 
 ### If you cannot publish to PyPI
 
-The `garg-aml` name has a single owner. If that account is unreachable, the code
+The `garg-aml-smurfing` name has a single owner. If that account is unreachable, the code
 is still safe — it lives in the `VerbekeLab` organisation — but the name is not
 reclaimable quickly. Publish under a new name instead: change `name` in
 `pyproject.toml`, register Trusted Publishing for the new project, and release

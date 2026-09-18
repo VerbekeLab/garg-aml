@@ -1,4 +1,4 @@
-# garg-aml
+# GARG-AML
 
 Graph-based detection of **smurfing** patterns in transaction networks.
 
@@ -9,15 +9,17 @@ are empty and whose off-diagonal parts are dense. GARG-AML scores every account
 by exactly that contrast — one number in [-1, 1], computed from local structure
 alone, with no training and no labels.
 
-[![PyPI](https://img.shields.io/pypi/v/garg-aml.svg)](https://pypi.org/project/garg-aml/)
-[![Python](https://img.shields.io/pypi/pyversions/garg-aml.svg)](https://pypi.org/project/garg-aml/)
+[![PyPI](https://img.shields.io/pypi/v/garg-aml-smurfing.svg)](https://pypi.org/project/garg-aml-smurfing/)
+[![Python](https://img.shields.io/pypi/pyversions/garg-aml-smurfing.svg)](https://pypi.org/project/garg-aml-smurfing/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-orange.svg)](LICENSE)
 
 ## Install
 
 ```bash
-pip install garg-aml
+pip install garg-aml-smurfing
 ```
+
+> Installed as **`garg-aml-smurfing`**, imported as **`garg_aml`**. The shorter name was already taken on PyPI by an unrelated project.
 
 ## Use
 

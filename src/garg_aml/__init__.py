@@ -74,7 +74,8 @@ def __getattr__(name: str) -> Any:
             from .estimator import GargAmlScorer
         except ImportError as exc:  # pragma: no cover - depends on the environment
             raise ImportError(
-                "GargAmlScorer needs scikit-learn: pip install 'garg-aml[sklearn]'"
+                "GargAmlScorer needs scikit-learn: "
+                "pip install 'garg-aml-smurfing[sklearn]'"
             ) from exc
         return GargAmlScorer
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
