@@ -1,11 +1,13 @@
-# garg-aml
+# GARG-AML
 
 Find **smurfing** in a transaction network: one score per account, computed from
 local structure, with nothing to train and no labels required.
 
 ```bash
-pip install garg-aml
+pip install garg-aml-smurfing
 ```
+
+> Installed as **`garg-aml-smurfing`**, imported as **`garg_aml`**. The shorter name was already taken on PyPI by an unrelated project.
 
 ```python
 import garg_aml as ga

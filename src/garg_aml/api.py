@@ -26,7 +26,7 @@ def _progress(nodes: list, show: bool) -> Iterable:
         from tqdm import tqdm
     except ImportError as exc:  # pragma: no cover - depends on the environment
         raise ImportError(
-            "progress=True needs tqdm: pip install 'garg-aml[progress]'"
+            "progress=True needs tqdm: pip install 'garg-aml-smurfing[progress]'"
         ) from exc
     return tqdm(nodes)
 
@@ -56,7 +56,8 @@ def _rows(
         from joblib import Parallel, delayed
     except ImportError as exc:  # pragma: no cover - depends on the environment
         raise ImportError(
-            "n_jobs other than 1 needs joblib: pip install 'garg-aml[parallel]'"
+            "n_jobs other than 1 needs joblib: "
+            "pip install 'garg-aml-smurfing[parallel]'"
         ) from exc
 
     # Each worker receives its own copy of the graph, so the memory cost scales

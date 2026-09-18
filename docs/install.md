@@ -1,7 +1,7 @@
 # Installation
 
 ```bash
-pip install garg-aml
+pip install garg-aml-smurfing
 ```
 
 Python 3.10 or newer. The core depends only on numpy, pandas, networkx and
@@ -11,11 +11,11 @@ scipy — no deep-learning stack, nothing that needs compiling.
 
 | Extra | Install | What it adds |
 |---|---|---|
-| `progress` | `pip install 'garg-aml[progress]'` | `progress=True` progress bars (tqdm) |
-| `parallel` | `pip install 'garg-aml[parallel]'` | `n_jobs` other than 1 (joblib) |
-| `sklearn` | `pip install 'garg-aml[sklearn]'` | the `GargAmlScorer` estimator |
+| `progress` | `pip install 'garg-aml-smurfing[progress]'` | `progress=True` progress bars (tqdm) |
+| `parallel` | `pip install 'garg-aml-smurfing[parallel]'` | `n_jobs` other than 1 (joblib) |
+| `sklearn` | `pip install 'garg-aml-smurfing[sklearn]'` | the `GargAmlScorer` estimator |
 
-Ask for several at once with `pip install 'garg-aml[progress,parallel]'`.
+Ask for several at once with `pip install 'garg-aml-smurfing[progress,parallel]'`.
 
 Each is genuinely optional: the package imports and scores without any of them,
 and reaching for a feature you have not installed raises an error that names the

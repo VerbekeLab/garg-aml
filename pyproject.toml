@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
-name = "garg-aml"
+name = "garg-aml-smurfing"
 dynamic = ["version"]
 description = "Graph-based detection of smurfing patterns in transaction networks."
 readme = "README.md"

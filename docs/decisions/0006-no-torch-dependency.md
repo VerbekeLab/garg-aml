@@ -8,7 +8,7 @@ needs `torch` and `torch-geometric`. That baseline lives in the research
 repository.
 
 **Why.** GARG-AML computes a closed-form structural score; nothing in it learns.
-A practitioner evaluating it should be able to `pip install garg-aml` and get a
+A practitioner evaluating it should be able to `pip install garg-aml-smurfing` and get a
 handful of megabytes. Pulling a deep-learning stack behind an unrelated score
 would cost adoption for no functional gain, and would make the package
 unusable in the locked-down environments where compliance teams work.
