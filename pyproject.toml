@@ -31,7 +31,11 @@ dependencies = ["numpy", "pandas", "networkx>=3.0", "scipy"]
 progress = ["tqdm"]
 parallel = ["joblib"]
 sklearn = ["scikit-learn"]
-dev = ["ruff", "mypy", "pytest", "pytest-cov", "pre-commit", "pandas-stubs"]
+# ruff is constrained to one minor: it formats Python inside Markdown as well as
+# in .py files, and its formatter changes between minors. Bump this and the
+# `rev` in .pre-commit-config.yaml together, never one alone -- otherwise the
+# hook formats one way and CI checks another.
+dev = ["ruff>=0.16,<0.17", "mypy", "pytest", "pytest-cov", "pre-commit", "pandas-stubs"]
 docs = ["mkdocs-material", "mkdocstrings[python]"]
 
 [project.urls]
@@ -95,14 +99,18 @@ disallow_untyped_defs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 
+# None of these ship py.typed, and the optional ones may not be installed at
+# all. Either way mypy should treat them as untyped rather than fail.
 [[tool.mypy.overrides]]
-module = ["networkx.*", "scipy.*"]
+module = ["networkx.*", "scipy.*", "sklearn.*", "joblib.*", "tqdm.*"]
 ignore_missing_imports = true
 
 # --- Tests ------------------------------------------------------------------
 [tool.pytest.ini_options]
-testpaths = ["tests", "src/garg_aml"]
-addopts = """--strict-markers --doctest-modules \
+# docs/ is in here so that every `>>>` example in the documentation is executed:
+# a stale example is a failing build, not something a reader discovers.
+testpaths = ["tests", "src/garg_aml", "docs"]
+addopts = """--strict-markers --doctest-modules --doctest-glob=*.md \
              --cov=garg_aml --cov-report=term-missing --cov-fail-under=90"""
 markers = [
     "requires_data: needs the IBM AMLworld dataset, which is not redistributable",

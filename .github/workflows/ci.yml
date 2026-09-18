@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -e ".[dev]"
+      - run: pip install -e ".[dev,sklearn,parallel,progress]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
@@ -33,5 +33,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e ".[dev]"
+      - run: pip install -e ".[dev,sklearn,parallel,progress]"
       - run: pytest

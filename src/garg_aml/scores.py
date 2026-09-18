@@ -75,8 +75,8 @@ def _directed_score(row: MeasureRow, score_type: str) -> tuple[float, float]:
 
     if score_type == "basic":
         return (
-            np.mean(dense) - np.mean(sparse),
-            np.mean(dense_t) - np.mean(sparse_t),
+            float(np.mean(dense) - np.mean(sparse)),
+            float(np.mean(dense_t) - np.mean(sparse_t)),
         )
 
     size_00 = row["size_00"]

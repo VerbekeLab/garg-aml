@@ -24,6 +24,17 @@ is `0.x` the public API may change with a minor bump, always with an entry here.
   latter needs the research repository present and is removed once the
   extraction is complete.
 
+- Public API: `score`, `score_edges`, `block_measures_frame`, and the
+  `GargAmlScorer` scikit-learn wrapper (optional, loaded on first use so that
+  scikit-learn stays out of the import path). `__all__` now lists exactly what
+  is supported.
+- `smurfing_graph`, a networkx generator of graphs with known patterns, so the
+  documentation and tests run with no data download.
+- `n_jobs` on the scoring entry points, and `progress` for a progress bar.
+- A documentation site: quickstart, how it works, five guide pages, scaling,
+  limitations, API reference and the decision log. Every `>>>` example in the
+  docs is executed by the test suite.
+
 ### Changed
 
 - PEP 8 names throughout, with the two per-node measure functions merged into
