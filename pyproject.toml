@@ -76,13 +76,6 @@ max-complexity = 10
 # the condition that triggers it; SIM108 would bury them at the end of a
 # ternary, in the one file where those values most need to be obvious.
 "src/garg_aml/_blocks.py" = ["SIM108"]
-# TEMPORARY, remove in Phase 3. Phase 2 moves the implementation across with
-# its function bodies unchanged, so that a golden-fixture mismatch can only
-# mean the move was wrong. These three rules all ask for a rewrite of a body
-# (ternaries, unpacking instead of list concatenation, no inplace=True) --
-# correct requests, but ones that belong to the rename-and-modernise pass,
-# where the fixtures are already green and can vouch for each change.
-"src/garg_aml/*.py" = ["SIM108", "RUF005", "PD002"]
 
 # --- Types ------------------------------------------------------------------
 [tool.mypy]
@@ -96,17 +89,11 @@ warn_unused_ignores = true
 module = ["networkx.*", "scipy.*"]
 ignore_missing_imports = true
 
-# Phase 2 moves the implementation across verbatim so that any fixture mismatch
-# points at the move rather than at a rewrite; annotations are Phase 3. Delete
-# this override then, and the global disallow_untyped_defs takes effect.
-[[tool.mypy.overrides]]
-module = ["garg_aml.*"]
-disallow_untyped_defs = false
-
 # --- Tests ------------------------------------------------------------------
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--strict-markers --cov=garg_aml --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests", "src/garg_aml"]
+addopts = """--strict-markers --doctest-modules \
+             --cov=garg_aml --cov-report=term-missing --cov-fail-under=90"""
 markers = [
     "requires_data: needs the IBM AMLworld dataset, which is not redistributable",
 ]

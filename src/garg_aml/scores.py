@@ -1,221 +1,232 @@
 """
 Aggregation of block measures into the GARG-AML score: the cheap second stage.
 
-Two aggregations. ``basic`` takes an unweighted mean over the penalty blocks;
+Two aggregations. ``basic`` takes an unweighted mean over the blocks;
 ``weighted_average`` weights each block by its number of free entries, which is
-Eq. (8) undirected and the size-weighted form of Eq. (14) directed. The package
-defaults to ``weighted_average`` because that is what the paper reports -- see
-docs/decisions/0001.
+Eq. (8) undirected and the size-weighted form of Eq. (14) directed.
+``weighted_average`` is the default because it is what the paper reports -- see
+``docs/decisions/0001``.
 
 For a directed graph the score is Eq. (14) on the graph's given orientation.
-``GARGAML_transposed`` and ``GARGAML_max`` are reported for reference; the
-transpose-max is not the paper's reverse-flow handling and is not the score --
-see docs/decisions/0007.
-
-Copied unchanged from the research repository.
+:func:`scores_from_measures` also reports the same quantity computed on the
+transpose, and the larger of the two, for reference. Neither is the score, and
+the transpose-max is **not** the paper's reverse-flow handling -- that lives in
+the level assignment. See ``docs/decisions/0007``.
 """
+
+from collections.abc import Mapping
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
+__all__ = ["score_from_measures", "scores_from_measures"]
 
-def calculate_score_directed(line, score_type="basic"):
-    """Directed score and its transpose for one row of block measures."""
-    measure_00 = line["measure_00"]
-    measure_01 = line["measure_01"]
-    measure_02 = line["measure_02"]
-    measure_10 = line["measure_10"]
-    measure_11 = line["measure_11"]
-    measure_12 = line["measure_12"]
-    measure_20 = line["measure_20"]
-    measure_21 = line["measure_21"]
-    measure_22 = line["measure_22"]
+#: One node's block measures: a plain mapping, or a row of a measures frame.
+MeasureRow = Mapping[str, Any] | pd.Series
 
-    if score_type == "basic":
-        measure_high = np.mean([measure_01, measure_12])
-        measure_low = np.mean(
-            [
-                measure_10,
-                measure_21,
-                measure_00,
-                measure_02,
-                measure_11,
-                measure_20,
-                measure_22,
-            ]
-        )
-        measure = measure_high - measure_low
+#: What the published experiments use.
+DEFAULT_SCORE_TYPE = "weighted_average"
 
-        measure_high_transpose = np.mean([measure_10, measure_21])
-        measure_low_transpose = np.mean(
-            [
-                measure_01,
-                measure_12,
-                measure_00,
-                measure_20,
-                measure_11,
-                measure_02,
-                measure_22,
-            ]
-        )
-        measure_transpose = measure_high_transpose - measure_low_transpose
-
-    elif score_type == "weighted_average":
-        size_00 = line["size_00"]
-        size_01 = line["size_01"]
-        size_02 = line["size_02"]
-        size_10 = line["size_10"]
-        size_11 = line["size_11"]
-        size_12 = line["size_12"]
-        size_20 = line["size_20"]
-        size_21 = line["size_21"]
-        size_22 = line["size_22"]
-
-        if size_01 + size_12 > 0:
-            measure_high = (size_01 * measure_01 + size_12 * measure_12) / (
-                size_01 + size_12
-            )
-        else:
-            # both sizes are 0, revert to basic measure
-            measure_high = np.mean([measure_01, measure_12])
-
-        if size_10 + size_21 + size_00 + size_02 + size_11 + size_20 + size_22 > 0:
-            measure_low = (
-                size_10 * measure_10
-                + size_21 * measure_21
-                + size_00 * measure_00
-                + size_02 * measure_02
-                + size_11 * measure_11
-                + size_20 * measure_20
-                + size_22 * measure_22
-            ) / (size_10 + size_21 + size_00 + size_02 + size_11 + size_20 + size_22)
-        else:
-            # all sizes are 0, revert to basic measure
-            measure_low = np.mean(
-                [
-                    measure_10,
-                    measure_21,
-                    measure_00,
-                    measure_02,
-                    measure_11,
-                    measure_20,
-                    measure_22,
-                ]
-            )
-
-        measure = measure_high - measure_low
-
-        if size_10 + size_21 > 0:
-            measure_high_transpose = (size_10 * measure_10 + size_21 * measure_21) / (
-                size_10 + size_21
-            )
-        else:
-            # both sizes are 0, revert to basic measure
-            measure_high_transpose = np.mean([measure_10, measure_21])
-
-        if size_01 + size_12 + size_00 + size_20 + size_11 + size_02 + size_22 > 0:
-            measure_low_transpose = (
-                size_01 * measure_01
-                + size_12 * measure_12
-                + size_00 * measure_00
-                + size_20 * measure_20
-                + size_11 * measure_11
-                + size_02 * measure_02
-                + size_22 * measure_22
-            ) / (size_01 + size_12 + size_00 + size_20 + size_11 + size_02 + size_22)
-        else:
-            # all sizes are 0, revert to basic measure
-            measure_low_transpose = np.mean(
-                [
-                    measure_01,
-                    measure_12,
-                    measure_00,
-                    measure_20,
-                    measure_11,
-                    measure_02,
-                    measure_22,
-                ]
-            )
-
-        measure_transpose = measure_high_transpose - measure_low_transpose
-
-    return measure, measure_transpose
+SCORE_TYPES = ("basic", "weighted_average")
 
 
-def define_gargaml_scores_directed(results_df_measures, score_type="basic"):
-    """Directed scores for a frame of block measures."""
-    nodes = []
-    gargaml = []
-    transposed_gargaml = []
-    max_gargaml = []
-
-    for _i, line in results_df_measures.iterrows():
-        measure, measure_transpose = calculate_score_directed(
-            line, score_type=score_type
+def _check_score_type(score_type: str) -> None:
+    if score_type not in SCORE_TYPES:
+        raise ValueError(
+            f"unknown score_type {score_type!r}; expected one of {SCORE_TYPES}"
         )
 
-        nodes.append(line["node"])
-        gargaml.append(measure)
-        transposed_gargaml.append(measure_transpose)
-        max_gargaml.append(max(measure, measure_transpose))
 
-    dict_gargaml = {
-        "node": nodes,
-        "GARGAML": gargaml,
-        "GARGAML_transposed": transposed_gargaml,
-        "GARGAML_max": max_gargaml,
-    }
+def _directed_score(row: MeasureRow, score_type: str) -> tuple[float, float]:
+    """Eq. (14) on the given orientation, and the same on the transpose."""
+    _check_score_type(score_type)
 
-    results_df = pd.DataFrame(dict_gargaml)
-    results_df.set_index("node", inplace=True)
-    return results_df
+    measure_00 = row["measure_00"]
+    measure_01 = row["measure_01"]
+    measure_02 = row["measure_02"]
+    measure_10 = row["measure_10"]
+    measure_11 = row["measure_11"]
+    measure_12 = row["measure_12"]
+    measure_20 = row["measure_20"]
+    measure_21 = row["measure_21"]
+    measure_22 = row["measure_22"]
 
-
-def calculate_score_undirected(line, score_type="basic"):
-    """Undirected score for one row of block measures (Eq. 8)."""
-    measure_1 = line["measure_1"]
-    measure_2 = line["measure_2"]
-    measure_3 = line["measure_3"]
-
-    if score_type == "basic":
-        measure = measure_2 - (measure_1 + measure_3) / 2
-
-    elif score_type == "weighted_average":
-        size_1 = line["size_1"]
-        size_2 = line["size_2"]
-        size_3 = line["size_3"]
-        total_size = size_1 + size_3
-        if total_size > 0:
-            measure = measure_2 - (size_1 * measure_1 + size_3 * measure_3) / total_size
-        elif size_2 > 0:
-            measure = measure_2  # both sizes are 0, so only measure_2 is relevant
-        else:
-            measure = -1  # Far away from smurfing
-    return measure
-
-
-def define_gargaml_scores_undirected(results_df_measures, score_type="basic"):
-    """Undirected scores for a frame of block measures."""
-    nodes = results_df_measures["node"].tolist()
-    gargaml = [
-        calculate_score_undirected(line, score_type=score_type)
-        for _, line in results_df_measures.iterrows()
+    dense = [measure_01, measure_12]
+    sparse = [
+        measure_10,
+        measure_21,
+        measure_00,
+        measure_02,
+        measure_11,
+        measure_20,
+        measure_22,
+    ]
+    dense_t = [measure_10, measure_21]
+    sparse_t = [
+        measure_01,
+        measure_12,
+        measure_00,
+        measure_20,
+        measure_11,
+        measure_02,
+        measure_22,
     ]
 
-    dict_gargaml = {"node": nodes, "GARGAML": gargaml}
+    if score_type == "basic":
+        return (
+            np.mean(dense) - np.mean(sparse),
+            np.mean(dense_t) - np.mean(sparse_t),
+        )
 
-    results_df = pd.DataFrame(dict_gargaml)
-    results_df.set_index("node", inplace=True)
-    return results_df
+    size_00 = row["size_00"]
+    size_01 = row["size_01"]
+    size_02 = row["size_02"]
+    size_10 = row["size_10"]
+    size_11 = row["size_11"]
+    size_12 = row["size_12"]
+    size_20 = row["size_20"]
+    size_21 = row["size_21"]
+    size_22 = row["size_22"]
+
+    dense_sizes = [size_01, size_12]
+    sparse_sizes = [size_10, size_21, size_00, size_02, size_11, size_20, size_22]
+    dense_sizes_t = [size_10, size_21]
+    sparse_sizes_t = [size_01, size_12, size_00, size_20, size_11, size_02, size_22]
+
+    return (
+        _weighted(dense, dense_sizes) - _weighted(sparse, sparse_sizes),
+        _weighted(dense_t, dense_sizes_t) - _weighted(sparse_t, sparse_sizes_t),
+    )
 
 
-def define_gargaml_scores(results_df_measures, directed, score_type="basic"):
-    """Dispatch to the directed or undirected aggregation."""
+def _weighted(measures: list[float], sizes: list[int]) -> float:
+    """Size-weighted mean, falling back to the plain mean when every size is 0."""
+    total = sum(sizes)
+    if total > 0:
+        return sum(m * s for m, s in zip(measures, sizes, strict=True)) / total
+    return float(np.mean(measures))
+
+
+def _undirected_score(row: MeasureRow, score_type: str) -> float:
+    """Eq. (8)."""
+    _check_score_type(score_type)
+
+    measure_1 = row["measure_1"]
+    measure_2 = row["measure_2"]
+    measure_3 = row["measure_3"]
+
+    if score_type == "basic":
+        return measure_2 - (measure_1 + measure_3) / 2
+
+    size_1 = row["size_1"]
+    size_2 = row["size_2"]
+    size_3 = row["size_3"]
+
+    total = size_1 + size_3
+    if total > 0:
+        return measure_2 - (size_1 * measure_1 + size_3 * measure_3) / total
+    if size_2 > 0:
+        return measure_2  # only the off-diagonal block carries any information
+    return -1  # no neighbourhood at all: as far from smurfing as the range goes
+
+
+def score_from_measures(
+    row: MeasureRow, directed: bool = False, score_type: str = DEFAULT_SCORE_TYPE
+) -> float:
+    """
+    Return the GARG-AML score for one node's block measures.
+
+    Parameters
+    ----------
+    row : mapping
+        Block measures for one node, keyed as :func:`block_measures` names them:
+        ``measure_1`` to ``measure_3`` undirected, ``measure_00`` to
+        ``measure_22`` directed, plus the matching ``size_*`` entries when
+        ``score_type`` is ``"weighted_average"``. A row of the frame written by
+        :func:`scores_from_measures`' input works directly.
+    directed : bool, default False
+        Use Eq. (14) rather than Eq. (8).
+    score_type : {"weighted_average", "basic"}, default "weighted_average"
+        Weight each block by its free entries, or take an unweighted mean.
+
+    Returns
+    -------
+    float
+        A score in [-1, 1]. Higher is more smurfing-like; 1 is a pure pattern.
+
+    Raises
+    ------
+    ValueError
+        If ``score_type`` is not one of the two known values.
+
+    References
+    ----------
+    Deprez et al. (2025), Eq. (8) and Eq. (14).
+
+    Examples
+    --------
+    >>> row = {"measure_1": 0.0, "measure_2": 1.0, "measure_3": 0.0,
+    ...        "size_1": 0, "size_2": 2, "size_3": 2}
+    >>> score_from_measures(row)
+    1.0
+    """
     if directed:
-        return define_gargaml_scores_directed(
-            results_df_measures, score_type=score_type
+        score, _transposed = _directed_score(row, score_type)
+        return score
+    return _undirected_score(row, score_type)
+
+
+def scores_from_measures(
+    measures: pd.DataFrame, directed: bool = False, score_type: str = DEFAULT_SCORE_TYPE
+) -> pd.DataFrame:
+    """
+    Scores for a frame of block measures.
+
+    Parameters
+    ----------
+    measures : pandas.DataFrame
+        One row per node, with a ``node`` column and the measure and size
+        columns :func:`block_measures` produces.
+    directed : bool, default False
+        Use Eq. (14) rather than Eq. (8).
+    score_type : {"weighted_average", "basic"}, default "weighted_average"
+        Weight each block by its free entries, or take an unweighted mean.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Indexed by node. Undirected: a ``GARGAML`` column. Directed: also
+        ``GARGAML_transposed`` and ``GARGAML_max``, which are reported for
+        reference and are not the score -- see ``docs/decisions/0007``.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> measures = pd.DataFrame({"node": ["a"], "measure_1": [0.0],
+    ...                          "measure_2": [1.0], "measure_3": [0.0],
+    ...                          "size_1": [0], "size_2": [2], "size_3": [2]})
+    >>> float(scores_from_measures(measures).loc["a", "GARGAML"])
+    1.0
+    """
+    if directed:
+        pairs = [_directed_score(row, score_type) for _, row in measures.iterrows()]
+        frame = pd.DataFrame(
+            {
+                "node": measures["node"].tolist(),
+                "GARGAML": [score for score, _ in pairs],
+                "GARGAML_transposed": [transposed for _, transposed in pairs],
+                "GARGAML_max": [max(pair) for pair in pairs],
+            }
         )
     else:
-        return define_gargaml_scores_undirected(
-            results_df_measures, score_type=score_type
+        frame = pd.DataFrame(
+            {
+                "node": measures["node"].tolist(),
+                "GARGAML": [
+                    _undirected_score(row, score_type) for _, row in measures.iterrows()
+                ],
+            }
         )
+
+    return frame.set_index("node")

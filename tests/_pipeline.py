@@ -5,15 +5,14 @@ Mirrors tools/make_golden.py stage for stage. Any divergence between this file
 and that one would make the comparison meaningless, so keep them in step.
 """
 
+import numbers
+
 import networkx as nx
 import pandas as pd
 
-from garg_aml.features import summarise_gargaml_scores
-from garg_aml.measures import (
-    GARG_AML_node_directed_measures,
-    GARG_AML_node_undirected_measures,
-)
-from garg_aml.scores import define_gargaml_scores
+from garg_aml.features import build_features
+from garg_aml.measures import block_measures
+from garg_aml.scores import scores_from_measures
 
 SCORE_TYPES = ["basic", "weighted_average"]
 FEATURE_SCORE_TYPE = "weighted_average"
@@ -42,6 +41,20 @@ UNDIRECTED_COLUMNS = [
     "size_2",
     "size_3",
 ]
+
+
+def index_values(frame):
+    """
+    A frame's index as comparable values, ignoring numeric dtype.
+
+    The old directed path collected node ids through DataFrame.iterrows(),
+    which cast integer ids to float; the package preserves them. Comparing
+    numeric ids as floats lets both test layers check that the right nodes are
+    present and aligned without demanding the old artefact. Non-numeric ids --
+    the string account names of the smurfing fixtures -- compare as themselves.
+    See docs/decisions/0008.
+    """
+    return [float(i) if isinstance(i, numbers.Number) else i for i in frame.index]
 
 
 def load_graph(edges_path, directed, nodes_path=None):
@@ -76,14 +89,14 @@ def measures_frame(G, directed):
         G_rev = G.reverse(copy=True)
         columns = DIRECTED_COLUMNS
         rows = [
-            GARG_AML_node_directed_measures(n, G, G_und, G_rev, include_size=True)
+            block_measures(
+                G, n, directed=True, undirected=G_und, reverse=G_rev, include_sizes=True
+            )
             for n in nodes
         ]
     else:
         columns = UNDIRECTED_COLUMNS
-        rows = [
-            GARG_AML_node_undirected_measures(n, G, include_size=True) for n in nodes
-        ]
+        rows = [block_measures(G, n, include_sizes=True) for n in nodes]
 
     frame = pd.DataFrame(rows, columns=columns)
     frame.insert(0, "node", nodes)
@@ -93,7 +106,7 @@ def measures_frame(G, directed):
 def scores_frame(measures, directed):
     """Stage 2a: measures to score, for every score type, side by side."""
     parts = [
-        define_gargaml_scores(measures, directed, score_type=score_type).add_prefix(
+        scores_from_measures(measures, directed, score_type=score_type).add_prefix(
             score_type + "__"
         )
         for score_type in SCORE_TYPES
@@ -103,5 +116,5 @@ def scores_frame(measures, directed):
 
 def features_frame(G, measures, directed):
     """Stage 2b: score plus neighbourhood summary statistics."""
-    scores = define_gargaml_scores(measures, directed, score_type=FEATURE_SCORE_TYPE)
-    return summarise_gargaml_scores(G, scores, columns=FEATURE_COLUMNS).sort_index()
+    scores = scores_from_measures(measures, directed, score_type=FEATURE_SCORE_TYPE)
+    return build_features(G, scores, columns=FEATURE_COLUMNS).sort_index()
