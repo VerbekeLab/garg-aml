@@ -44,7 +44,7 @@ from .preprocess import drop_hubs, reduce_graph
 from .scores import score_from_measures, scores_from_measures
 from .synthetic import smurfing_graph
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.1.0"
 
 # A library attaches no handlers of its own; the application decides.
 logging.getLogger(__name__).addHandler(logging.NullHandler())

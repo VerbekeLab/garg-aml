@@ -64,12 +64,38 @@ badge.
 Publishing uses **PyPI Trusted Publishing** from GitHub Actions. There is no API
 token anywhere, so nothing has to be rotated or handed over.
 
+### One-time setup (already done for this project)
+
+On PyPI, under the project's *Publishing* settings, a trusted publisher is
+registered with:
+
+| Field | Value |
+|---|---|
+| Owner | `VerbekeLab` |
+| Repository | `garg-aml` |
+| Workflow | `release.yml` |
+| Environment | `release` |
+
+All four must match or PyPI rejects the upload. The `release` environment also
+exists in the repository's GitHub settings; it is the natural place to add a
+required reviewer if you ever want releases gated.
+
+Before the very first upload of a *new* project name, register it as a *pending*
+publisher on PyPI — the project does not exist yet, so there is nothing to
+configure it against otherwise.
+
+### Each release
+
 1. Update `CHANGELOG.md`: move `[Unreleased]` entries under the new version.
 2. Bump `__version__` in `src/garg_aml/__init__.py` and `version:` in
    `CITATION.cff`.
 3. Commit, then tag: `git tag v0.1.0 && git push origin main --tags`.
-4. The `release` workflow builds and publishes; Zenodo mints a DOI from the
-   GitHub release.
+4. The `release` workflow builds, runs `twine check`, and publishes on the tag.
+5. Create a GitHub release from the tag; Zenodo mints a DOI from it.
+
+Dry-run first if anything about the packaging changed: `python -m build` then
+`twine check dist/*`, and install the built wheel into an empty virtualenv to
+confirm it works with nothing else present.
 
 ### If you cannot publish to PyPI
 

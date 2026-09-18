@@ -7,6 +7,12 @@ is `0.x` the public API may change with a minor bump, always with an entry here.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-18
+
+First public release. The GARG-AML scoring core, extracted from the research
+repository that accompanies the paper, with its behaviour pinned to the
+implementation that produced the published results.
+
 ### Added
 
 - Project skeleton: packaging, lint/type/test configuration, CI and docs scaffold.
@@ -67,3 +73,6 @@ is `0.x` the public API may change with a minor bump, always with an entry here.
 
 - The original's bare `except:` around the neighbour statistics is written as the
   explicit empty check it always was. Same result, verified by both test layers.
+
+[Unreleased]: https://github.com/VerbekeLab/garg-aml/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/VerbekeLab/garg-aml/releases/tag/v0.1.0

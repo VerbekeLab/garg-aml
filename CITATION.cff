@@ -11,7 +11,7 @@ authors:
     affiliation: KU Leuven
 repository-code: "https://github.com/VerbekeLab/garg-aml"
 license: MIT
-version: 0.1.0.dev0
+version: 0.1.0
 preferred-citation:
   type: article
   title: >-
