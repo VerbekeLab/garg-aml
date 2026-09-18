@@ -30,7 +30,23 @@ from ._blocks import (
 )
 from ._ordering import node_order
 
-__all__ = ["block_measures"]
+__all__ = ["DIRECTED_COLUMNS", "UNDIRECTED_COLUMNS", "block_measures"]
+
+#: Column names for the three undirected blocks, in the order
+#: :func:`block_measures` returns them with ``include_sizes=True``.
+UNDIRECTED_COLUMNS = [
+    "measure_1",
+    "measure_2",
+    "measure_3",
+    "size_1",
+    "size_2",
+    "size_3",
+]
+
+#: Column names for the nine directed blocks, row-major.
+DIRECTED_COLUMNS = [f"measure_{i}{j}" for i in range(3) for j in range(3)] + [
+    f"size_{i}{j}" for i in range(3) for j in range(3)
+]
 
 
 def _undirected_measures(

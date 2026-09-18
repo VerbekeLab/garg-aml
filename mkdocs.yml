@@ -32,4 +32,26 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Decisions: decisions/index.md
+  - Install: install.md
+  - Quickstart: quickstart.md
+  - How it works: how-it-works.md
+  - Guide:
+      - Preparing your data: guide/data.md
+      - Preprocessing: guide/preprocessing.md
+      - Interpreting a score: guide/interpreting.md
+      - Turning scores into alerts: guide/alerts.md
+      - Using scores as features: guide/features.md
+  - Scaling: scaling.md
+  - Limitations: limitations.md
+  - API reference: reference/index.md
+  - Reproducing the paper: reproducing.md
+  - Decisions:
+      - Overview: decisions/index.md
+      - 0001 weighted average default: decisions/0001-weighted-average-default.md
+      - 0002 Louvain is explicit: decisions/0002-louvain-is-explicit.md
+      - 0003 Frozen edge cases: decisions/0003-frozen-edge-cases.md
+      - 0004 Two-stage pipeline: decisions/0004-two-stage-pipeline.md
+      - 0005 Synthetic generator differs: decisions/0005-synthetic-generator-differs.md
+      - 0006 No PyTorch: decisions/0006-no-torch-dependency.md
+      - 0007 Directed score is Eq. 14: decisions/0007-directed-score-is-equation-14.md
+      - 0008 Node identity preserved: decisions/0008-node-identity-is-preserved.md
